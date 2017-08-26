@@ -3,17 +3,22 @@ const colors = require("colors");
 const info = (str)=>{debuglog(JSON.stringify(str).green)};
 const debug = (str)=>{debuglog(JSON.stringify(str).white)};
 const error = (str)=>{debuglog(JSON.stringify(str).red.bold)};
-const net = require("net");
-const {homedir} = require("os");
-const {app} = require("electron");
-const fs = require("fs");
-const fork = require("child_process").fork;
 const {join: pathJoin} = require("path");
 const path = pathJoin(__dirname, "..", "modules");
+
+if (process.argv[1] && process.argv[1].includes("--module")) {
+  const moduleName = process.argv[1].split("=")[1];
+  require(pathJoin(path, `${moduleName}.asar`, moduleName));
+  return;
+}
+
+const fs = require("fs");
 const dirContents = fs.readdirSync(path);
-const asElectron = { env: {NODE_DEBUG: process.env.NODE_DEBUG, ELECTRON_RUN_AS_NODE: false}};
-const noElectron = { env: {NODE_DEBUG: process.env.NODE_DEBUG, ELECTRON_RUN_AS_NODE: true}};
-let clients = [];
+const {fork, spawn} = require("child_process");
+const {homedir} = require("os");
+const asElectron = { stdio: "inherit", env: process.env};
+const net = require("net");
+let clients = new Set();
 
 info(`hello - tell me to broadcast a message with kill -s sigusr2 ${process.pid}`);
 
@@ -24,7 +29,15 @@ try {
 const fdPath = pathJoin(homedir());
 const svr = net.createServer().listen("/tmp/test.skt");
 svr.on("error", error);
-svr.on("connection", clients.push.bind(clients));
+svr.on("connection", (client)=>{
+  clients.add(client);
+  debug(`connection count: ${clients.size}`);
+  client.on("close", ()=>{
+    clients.delete(client);
+    debug("closed a client connection");
+    debug(`connection count: ${clients.size}`);
+  });
+});
 process.on("SIGUSR2", ()=>{
   clients.forEach(client=>client.write('{"msg": "broadcast from main"}'));
 });
@@ -34,8 +47,9 @@ debug(path);
 dirContents.forEach(forkModule);
 
 function forkModule(name) {
-  let child = fork(pathJoin(path, name, name.split(".")[0]), [], noElectron);
+  debug(process.execPath);
+  let child = spawn(process.execPath, [`--module=${name.split(".")[0]}`], asElectron);
   debug(`forked ${name}`);
   child.on("error", error);
-  child.on("exit", ()=>{debug(`${name} exited`);});
+  child.on("exit", debug.bind(null, `${name} exited`));
 }
