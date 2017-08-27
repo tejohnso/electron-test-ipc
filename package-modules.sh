@@ -8,4 +8,4 @@ cd ..
 cd builds/electron-test-player-as-submodule-linux-x64/
 rm -rf resources/modules
 mkdir -p resources/modules
-mv ../../modules/*.asar resources/modules
+cp ../../modules/*.asar resources/modules

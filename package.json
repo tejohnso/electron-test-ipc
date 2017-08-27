@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_DEBUG='player,main' builds/electron-test-player-as-submodule-linux-x64/electron-test-player-as-submodule",
+    "start": "NODE_DEBUG='not-electron,player,main' builds/electron-test-player-as-submodule-linux-x64/electron-test-player-as-submodule",
     "package": "electron-packager --out=builds --ignore=modules/ --overwrite=true --asar=true . && ./package-modules.sh"
   },
   "keywords": [],

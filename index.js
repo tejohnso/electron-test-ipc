@@ -2,9 +2,9 @@ const {info, debug, error} = require("./cli-logger.js")("main");
 const {join: pathJoin} = require("path");
 const path = pathJoin(__dirname, "..", "modules");
 
-if (process.argv[1] && process.argv[1].includes("--module")) {
-  const moduleName = process.argv[1].split("=")[1];
-  require(pathJoin(path, `${moduleName}.asar`, moduleName));
+if (process.env.LOAD_MODULE_NAME) {
+  debug(`loading  ${process.env.LOAD_MODULE_NAME}`);
+  require(pathJoin(path, process.env.LOAD_MODULE_NAME));
   return;
 }
 
@@ -12,7 +12,6 @@ const fs = require("fs");
 const dirContents = fs.readdirSync(path);
 const {fork, spawn} = require("child_process");
 const {homedir} = require("os");
-const asElectron = { stdio: "inherit", env: process.env};
 const net = require("net");
 let clients = new Set();
 
@@ -40,12 +39,22 @@ process.on("SIGUSR2", ()=>{
 
 debug(dirContents);
 debug(path);
-dirContents.forEach(forkModule);
+dirContents.forEach(startModule);
 
-function forkModule(name) {
-  debug(process.execPath);
-  let child = spawn(process.execPath, [`--module=${name.split(".")[0]}`], asElectron);
-  debug(`forked ${name}`);
+function startModule(name) {
+  const asElectron = Object.assign({}, process.env, {
+    LOAD_MODULE_NAME: name
+  });
+  const asNode = Object.assign({}, process.env, {
+    ELECTRON_RUN_AS_NODE: true
+  });
+
+  const moduleAsElectron = require(pathJoin(path, `${name}`, "package.json")).asElectron;
+  const env = moduleAsElectron ? asElectron : asNode;
+  const args = moduleAsElectron ? [] : [pathJoin(path, name)];
+
+  let child = spawn(process.execPath, args, {stdio: "inherit", env});
+  debug(`started ${process.execPath} ${args} as ${moduleAsElectron ? "electron" : "node"}`);
   child.on("error", error);
   child.on("exit", debug.bind(null, `${name} exited`));
 }
