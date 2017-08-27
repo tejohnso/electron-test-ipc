@@ -14,5 +14,3 @@ const skt = net.createConnection("/tmp/test.skt", (something)=>{
 skt.on("error", error);
 skt.on("end", ()=>debug("end"));
 skt.pipe(JSONStream.parse()).on("data", info);
-
-process.stdout.resume();
