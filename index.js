@@ -1,8 +1,4 @@
-const debuglog = require("util").debuglog("main");
-const colors = require("colors");
-const info = (str)=>{debuglog(JSON.stringify(str).green)};
-const debug = (str)=>{debuglog(JSON.stringify(str).white)};
-const error = (str)=>{debuglog(JSON.stringify(str).red.bold)};
+const {info, debug, error} = require("./cli-logger.js")("main");
 const {join: pathJoin} = require("path");
 const path = pathJoin(__dirname, "..", "modules");
 

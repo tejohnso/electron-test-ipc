@@ -1,11 +1,6 @@
-const debuglog = require("util").debuglog("player");
-const colors = require("colors");
-const info = (str)=>{debuglog(JSON.stringify(str).green)};
-const debug = (str)=>{debuglog(JSON.stringify(str).white)};
-const error = (str)=>{debuglog(JSON.stringify(str).red.bold)};
+const {info, error, debug} = require("./cli-logger")("player");
 const net = require("net");
 const JSONStream = require("JSONStream");
-colors.enabled = true;
 
 const {net: electronNet, app} = require("electron");
 debug(typeof electronNet);
