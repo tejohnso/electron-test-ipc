@@ -4,7 +4,13 @@ const path = pathJoin(__dirname, "..", "modules");
 
 if (process.env.LOAD_MODULE_NAME) {
   debug(`loading  ${process.env.LOAD_MODULE_NAME}`);
-  require(pathJoin(path, process.env.LOAD_MODULE_NAME));
+  try {
+    require(pathJoin(path, process.env.LOAD_MODULE_NAME));
+  }catch(e) {
+    debug(`could not load module ${pathJoin(path, process.env.LOAD_MODULE_NAME)}`);
+    debug(e);
+    process.exit();
+  }
   return;
 }
 
