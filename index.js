@@ -1,6 +1,9 @@
 const {info, debug, error} = require("./cli-logger.js")("main");
 const {join: pathJoin} = require("path");
 const path = pathJoin(__dirname, "..", "modules");
+const socketFilePath = require("os").platform() === "win32" ?
+pathJoin('\\\\?\\pipe', process.cwd(), 'rise-local-messaging-pipe') :
+pathJoin(process.cwd(), "rise-local-messaging-socket");
 
 if (process.env.LOAD_MODULE_NAME) {
   debug(`loading  ${process.env.LOAD_MODULE_NAME}`);
@@ -16,19 +19,17 @@ if (process.env.LOAD_MODULE_NAME) {
 
 const fs = require("fs");
 const dirContents = fs.readdirSync(path);
-const {fork, spawn} = require("child_process");
-const {homedir} = require("os");
+const {spawn} = require("child_process");
 const net = require("net");
 let clients = new Set();
 
 info(`hello - tell me to broadcast a message with kill -s sigusr2 ${process.pid}`);
 
 try {
-  require("fs").unlinkSync("/tmp/test.skt");
+  require("fs").unlinkSync(socketFilePath);
 }catch(e){}
 
-const fdPath = pathJoin(homedir());
-const svr = net.createServer().listen("/tmp/test.skt");
+const svr = net.createServer().listen(socketFilePath);
 svr.on("error", error);
 svr.on("connection", (client)=>{
   clients.add(client);

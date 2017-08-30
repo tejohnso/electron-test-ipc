@@ -1,2 +1,3 @@
-test spawning asar modules with ipc
-see nightmare npm app for spawn example that spawns with electron rather than node
+Test spawning asar modules with ipc
+
+Use asElectron:true in package.json to indicate module should be run with Electron APIs
