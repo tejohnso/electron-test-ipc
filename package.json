@@ -1,10 +1,10 @@
 {
-  "name": "electron-test-player-as-submodule",
+  "name": "electron-test-ipc",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_DEBUG='not-electron,as-electron,main' builds/electron-test-player-as-submodule-linux-x64/electron-test-player-as-submodule",
+    "start": "NODE_DEBUG='not-electron,as-electron,main' builds/electron-test-ipc-linux-x64/electron-test-ipc",
     "package": "eslint **/*.js && rm -f rise-local-messaging-socket && electron-packager --out=builds --ignore=modules/ --overwrite=true --asar=true . && ./package-modules.sh"
   },
   "keywords": [],

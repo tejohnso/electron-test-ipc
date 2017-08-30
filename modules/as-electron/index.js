@@ -18,7 +18,7 @@ skt.on("error", error);
 
 skt.pipe(JSONStream.parse()).on("data", (msg)=>{
   dialog.showMessageBox(null, {
-    title: "message from main",
+    title: "Module: As Electron",
     type: "info",
     buttons: ["OK"],
     defaultId: 0,
