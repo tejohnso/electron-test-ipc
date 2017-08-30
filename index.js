@@ -1,6 +1,6 @@
 const {info, debug, error} = require("./cli-logger.js")("main");
 const {join: pathJoin} = require("path");
-const path = pathJoin(__dirname, "..", "modules");
+const modulePath = pathJoin(__dirname, "..", "modules");
 const socketFilePath = require("os").platform() === "win32" ?
 pathJoin('\\\\?\\pipe', process.cwd(), 'rise-local-messaging-pipe') :
 pathJoin(process.cwd(), "rise-local-messaging-socket");
@@ -8,9 +8,9 @@ pathJoin(process.cwd(), "rise-local-messaging-socket");
 if (process.env.LOAD_MODULE_NAME) {
   debug(`loading  ${process.env.LOAD_MODULE_NAME}`);
   try {
-    require(pathJoin(path, process.env.LOAD_MODULE_NAME));
+    require(pathJoin(modulePath, process.env.LOAD_MODULE_NAME));
   }catch(e) {
-    debug(`could not load module ${pathJoin(path, process.env.LOAD_MODULE_NAME)}`);
+    debug(`could not load module ${pathJoin(modulePath, process.env.LOAD_MODULE_NAME)}`);
     debug(e);
     process.exit();
   }
@@ -18,7 +18,7 @@ if (process.env.LOAD_MODULE_NAME) {
 }
 
 const fs = require("fs");
-const dirContents = fs.readdirSync(path);
+const dirContents = fs.readdirSync(modulePath);
 const {spawn} = require("child_process");
 const net = require("net");
 let clients = new Set();
@@ -45,7 +45,7 @@ process.on("SIGUSR2", ()=>{
 });
 
 debug(dirContents);
-debug(path);
+debug(modulePath);
 dirContents.forEach(startModule);
 
 function startModule(name) {
@@ -56,9 +56,9 @@ function startModule(name) {
     ELECTRON_RUN_AS_NODE: true
   });
 
-  const moduleAsElectron = require(pathJoin(path, `${name}`, "package.json")).asElectron;
+  const moduleAsElectron = require(pathJoin(modulePath, `${name}`, "package.json")).asElectron;
   const env = moduleAsElectron ? asElectron : asNode;
-  const args = moduleAsElectron ? [] : [pathJoin(path, name)];
+  const args = moduleAsElectron ? [] : [pathJoin(modulePath, name)];
 
   let child = spawn(process.execPath, args, {stdio: "inherit", env});
   debug(`started ${process.execPath} ${args} as ${moduleAsElectron ? "electron" : "node"}`);
